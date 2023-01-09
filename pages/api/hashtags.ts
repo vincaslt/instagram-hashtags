@@ -7,9 +7,15 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  console.log(req.query)
+  const dummyHashtags = [
+    'TestHashtag1',
+    'TestHashtag2',
+    'TestHashtag3',
+    'asdasdad',
+    'asdasdasd',
+    'fwqfewefwfe',
+    'asdacascasc',
+  ]
 
-  const hashtags = ['test_hashtag1', 'test_2', 'test_hashtag_3']
-
-  res.status(200).json(hashtags)
+  res.status(200).json(dummyHashtags)
 }

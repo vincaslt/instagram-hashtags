@@ -1,16 +1,13 @@
+import { Filters, FiltersButton, FiltersSidebar } from './components/Filters'
 import List from './List'
 
 async function HomePage() {
-  const lists = await getLists()
-  return (
-    <main>
-      <List lists={lists} />
-    </main>
-  )
+  const hashtags = await getHashtags()
+  return <List hashtags={hashtags} />
 }
 
-async function getLists() {
-  const response = await fetch(`${process.env.API_URL}/lists`)
+async function getHashtags() {
+  const response = await fetch(`${process.env.API_URL}/hashtags`)
   return response.json()
 }
 
