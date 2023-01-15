@@ -1,7 +1,6 @@
-import './globals.css'
 import AddHashtagButton from './components/AddHashtagButton'
-import { Filters, FiltersButton, FiltersSidebar } from './components/Filters'
 import CopyHashtagsButton from './components/CopyHashtagsButton'
+import './globals.css'
 
 export default function RootLayout({
   children,
@@ -16,15 +15,9 @@ export default function RootLayout({
       */}
       <head />
       <body className="bg-slate-50">
-        <div className="flex flex-col lg:flex-row h-screen">
-          <FiltersSidebar className="bg-white hidden md:block">
-            <Filters />
-          </FiltersSidebar>
+        <div className="flex flex-col lg:flex-row h-screen">{children}</div>
 
-          <div className="overflow-auto p-6 flex-1">{children}</div>
-        </div>
-
-        <div className="fixed justify-end items-center bottom-0 inset-x-0 flex p-3 space-x-1">
+        <div className="fixed justify-end items-center bottom-0 inset-x-0 flex p-3 space-x-2">
           <CopyHashtagsButton />
           <AddHashtagButton />
         </div>

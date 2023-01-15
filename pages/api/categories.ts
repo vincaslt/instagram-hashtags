@@ -1,29 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { Category } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import prisma from '../../lib/prisma'
 
-type Data = {
-  id: string
-  name: string
-}[]
+type Data = Category[]
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const dummyCategories = [
-    {
-      id: '1',
-      name: 'Test Category 1',
-    },
-    {
-      id: '2',
-      name: 'Test Category 2',
-    },
-    {
-      id: '3',
-      name: 'Test Category 3',
-    },
-  ]
+  const categories = await prisma.category.findMany()
 
-  res.status(200).json(dummyCategories)
+  res.status(200).json(categories)
 }
