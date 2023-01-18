@@ -1,13 +1,12 @@
 'use client'
 
+import { ComponentProps } from 'react'
 import CircularButton from './ui/CircularButton'
 
-function AddHashtagButton() {
-  const handleClick = () => {
-    console.log('add hashtag')
-  }
-
-  return <CircularButton onClick={handleClick} className="w-14 h-14 text-xl" />
+function AddHashtagButton(
+  props: Omit<ComponentProps<typeof CircularButton>, 'className'>
+) {
+  return <CircularButton {...props} className="w-10 h-10 text-sm" />
 }
 
 export default AddHashtagButton

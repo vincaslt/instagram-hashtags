@@ -6,11 +6,11 @@ import classNames from '../../utils'
 import { Drawer, useDrawer } from '../ui/Drawer'
 
 type Props = {
-  children: ReactNode
+  filters: ReactNode
   className: string
 }
 
-export default function FiltersButton({ children, className }: Props) {
+export default function FiltersButton({ filters, className }: Props) {
   const { isOpen, close, open } = useDrawer()
 
   return (
@@ -28,7 +28,7 @@ export default function FiltersButton({ children, className }: Props) {
       </button>
 
       <Drawer title="Filter" isOpen={isOpen} close={close}>
-        {children}
+        {filters}
       </Drawer>
     </>
   )

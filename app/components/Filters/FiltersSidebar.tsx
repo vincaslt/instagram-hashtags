@@ -1,15 +1,10 @@
-import { ReactNode } from 'react'
-import classNames from '../../utils'
+import Filters from './Filters'
 
-type Props = {
-  children: ReactNode
-  className: string
-}
-
-export default function FiltersSidebar({ children, className }: Props) {
+export default function FiltersSidebar() {
   return (
-    <section className={classNames('w-56 p-6 overflow-auto', className)}>
-      {children}
+    <section className="bg-slate-50 border-r hidden md:block w-64 p-6 overflow-auto shadow-inner-r">
+      {/* @ts-expect-error Server Component */}
+      <Filters />
     </section>
   )
 }

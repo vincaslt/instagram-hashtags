@@ -1,17 +1,14 @@
-'use client'
-
+import { ComponentProps } from 'react'
 import { FaCopy } from 'react-icons/fa'
 import CircularButton from './ui/CircularButton'
 
-function CopyHashtagsButton() {
-  const handleClick = () => {
-    console.log('copy hashtags')
-  }
-
+function CopyHashtagsButton(
+  props: Omit<ComponentProps<typeof CircularButton>, 'className' | 'icon'>
+) {
   return (
     <CircularButton
-      onClick={handleClick}
-      className="w-9 h-9 text-sm"
+      {...props}
+      className="w-14 h-14 text-xl"
       icon={<FaCopy />}
     />
   )

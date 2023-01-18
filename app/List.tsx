@@ -1,7 +1,20 @@
 'use client'
 
 import { Category, Hashtag } from '@prisma/client'
-import { ReactNode, useLayoutEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  ChangeEvent,
+  FormEvent,
+  ReactNode,
+  startTransition,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
+import { HiCheck, HiX } from 'react-icons/hi'
+import { useAsync, useAsyncFn } from 'react-use'
+import AddHashtagButton from './components/AddHashtagButton'
+import CopyHashtagsButton from './components/CopyHashtagsButton'
 import classNames from './utils'
 
 type Props = {
@@ -13,9 +26,11 @@ type Props = {
 
 function List({ hashtags, filters }: Props) {
   const checkbox = useRef<HTMLInputElement>(null)
+  const router = useRouter()
   const [checked, setChecked] = useState(false)
   const [indeterminate, setIndeterminate] = useState(false)
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([])
+  const [newHashtagText, setNewHashtagText] = useState<string | null>(null)
 
   useLayoutEffect(() => {
     const isIndeterminate =
@@ -25,7 +40,7 @@ function List({ hashtags, filters }: Props) {
     if (checkbox.current) {
       checkbox.current.indeterminate = isIndeterminate
     }
-  }, [selectedHashtags])
+  }, [hashtags.length, selectedHashtags])
 
   function toggleAll() {
     setSelectedHashtags(
@@ -35,9 +50,55 @@ function List({ hashtags, filters }: Props) {
     setIndeterminate(false)
   }
 
+  const handleAddNewClick = () => {
+    setNewHashtagText('')
+  }
+
+  const handleCloseClick = () => {
+    setNewHashtagText(null)
+  }
+
+  const handleInputTextChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setNewHashtagText(e.target.value.trim())
+  }
+
+  const [submitState, handleSubmit] = useAsyncFn(
+    async (e: FormEvent) => {
+      e.preventDefault()
+
+      if (!newHashtagText) {
+        return
+      }
+
+      await sendNewHashtag(newHashtagText)
+
+      startTransition(() => {
+        // Refresh the current route and fetch new data from the server without
+        // losing client-side browser or React state.
+        router.refresh()
+        setNewHashtagText(null)
+      })
+    },
+    [newHashtagText, router]
+  )
+
+  const handleCopyClick = async () => {
+    const selectedHashtagsText = hashtags
+      .filter((hashtag) => selectedHashtags.includes(hashtag.id))
+      .map((hashtag) => `#${hashtag.name}`)
+      .join(' ')
+
+    try {
+      await navigator.clipboard.writeText(selectedHashtagsText)
+      console.log('Content copied to clipboard')
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+    }
+  }
+
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between h-10 pl-4 mb-2 pt-0">
+      <div className="flex items-center justify-between h-10 pl-6 mb-2 pt-0">
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -46,55 +107,100 @@ function List({ hashtags, filters }: Props) {
             checked={checked}
             onChange={toggleAll}
           />
-          <span className="pl-4 text-gray-500 text-sm">
+          <span className="pl-4 text-gray-500">
             {selectedHashtags.length} selected
           </span>
         </div>
         {filters}
       </div>
-      <ul className="flex flex-col overflow-auto bg-white rounded-md border">
-        {hashtags.map((hashtag) => (
-          <li
-            key={hashtag.id}
-            className={classNames(
-              'flex relative border-b last:border-b-0 group',
-              selectedHashtags.includes(hashtag.id) ? 'bg-gray-50' : undefined
-            )}
-          >
-            <label className="flex items-center p-4 flex-1 cursor-pointer">
-              {selectedHashtags.includes(hashtag.id) && (
-                <div className="absolute -inset-y-[1px] group-[:last-child]:-inset-y-0 -left-0 w-0.5 bg-indigo-600" />
-              )}
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6 cursor-pointer"
-                value={hashtag.id}
-                checked={selectedHashtags.includes(hashtag.id)}
-                onChange={(e) =>
-                  setSelectedHashtags(
-                    e.target.checked
-                      ? [...selectedHashtags, hashtag.id]
-                      : selectedHashtags.filter((p) => p !== hashtag.id)
-                  )
-                }
-              />
-              <span className="pl-4">#{hashtag.name}</span>
-              <div className="items-center justify-end flex-1 gap-1 hidden md:flex">
-                {hashtag.categories.map((category) => (
-                  <span
-                    key={category.id}
-                    className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800"
-                  >
-                    {category.title}
-                  </span>
-                ))}
-              </div>
-            </label>
-          </li>
-        ))}
-      </ul>
+      <div className="overflow-auto rounded-md border border-gray-300 bg-white">
+        <ul className="divide-y divide-gray-300">
+          {hashtags.map((hashtag) => (
+            <li
+              key={hashtag.id}
+              className={
+                selectedHashtags.includes(hashtag.id)
+                  ? 'bg-indigo-50'
+                  : undefined
+              }
+            >
+              <label className="flex items-center px-6 py-4 flex-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6 cursor-pointer"
+                  value={hashtag.id}
+                  checked={selectedHashtags.includes(hashtag.id)}
+                  onChange={(e) =>
+                    setSelectedHashtags(
+                      e.target.checked
+                        ? [...selectedHashtags, hashtag.id]
+                        : selectedHashtags.filter((p) => p !== hashtag.id)
+                    )
+                  }
+                />
+                <span className="pl-4">#{hashtag.name}</span>
+                <div className="items-center justify-end flex-1 gap-1 hidden md:flex">
+                  {hashtag.categories.map((category) => (
+                    <span
+                      key={category.id}
+                      className={classNames(
+                        'inline-flex items-center rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800',
+                        selectedHashtags.includes(hashtag.id)
+                          ? 'bg-indigo-200'
+                          : 'bg-gray-100'
+                      )}
+                    >
+                      {category.title}
+                    </span>
+                  ))}
+                </div>
+              </label>
+            </li>
+          ))}
+          {newHashtagText !== null && (
+            <li className="px-6 py-4 flex-1 bg-gray-50">
+              <form className="flex items-center gap-2" onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  name="hashtag"
+                  className="flex w-full min-w-0 max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm h-9"
+                  value={newHashtagText}
+                  onChange={handleInputTextChange}
+                />
+                <button
+                  type="submit"
+                  className="inline-flex flex-shrink-0 items-center justify-center rounded-md border w-9 h-9 min-w-9 border-transparent bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  disabled={submitState.loading}
+                >
+                  <HiCheck className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex flex-shrink-0 items-center justify-center rounded-md border w-9 h-9 min-w-9 border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={handleCloseClick}
+                >
+                  <HiX className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </form>
+
+              {/* TODO: assign categories */}
+            </li>
+          )}
+        </ul>
+      </div>
+      <div className="fixed justify-end items-center bottom-0 inset-x-0 flex p-3 space-x-2">
+        <AddHashtagButton onClick={handleAddNewClick} />
+        <CopyHashtagsButton onClick={handleCopyClick} />
+      </div>
     </div>
   )
+}
+
+function sendNewHashtag(hashtag: string) {
+  return fetch('api/hashtags', {
+    method: 'POST',
+    body: JSON.stringify({ hashtag }),
+  })
 }
 
 export default List

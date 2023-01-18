@@ -1,10 +1,8 @@
 import { Category } from '@prisma/client'
 
-type Props = {
-  categories: Category[]
-}
+export default async function Filters() {
+  const categories = await fetchCategories()
 
-export default function Filters({ categories }: Props) {
   return (
     <form className="space-y-4">
       {categories.map((category) => (
@@ -24,4 +22,9 @@ export default function Filters({ categories }: Props) {
       ))}
     </form>
   )
+}
+
+async function fetchCategories(): Promise<Category[]> {
+  const response = await fetch(`${process.env.API_URL}/categories`)
+  return response.json()
 }
