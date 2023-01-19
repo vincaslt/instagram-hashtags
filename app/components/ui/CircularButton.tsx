@@ -14,7 +14,7 @@ function CircularButton({ icon, className, ...rest }: Props) {
     <button
       type="button"
       className={classNames(
-        'inline-flex items-center justify-center rounded-full border border-transparent bg-indigo-600 text-white shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+        'inline-flex items-center justify-center rounded-full border border-transparent bg-indigo-600 text-white shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 pointer-events-auto',
         className
       )}
       {...rest}

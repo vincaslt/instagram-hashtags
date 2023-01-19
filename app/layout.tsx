@@ -14,7 +14,7 @@ export default function RootLayout({
       */}
       <head />
       <body className="bg-white">
-        <div className="flex flex-col lg:flex-row h-screen">
+        <div className="flex lg:flex-row h-screen">
           <FiltersSidebar />
           <div className="overflow-auto p-6 flex-1">{children}</div>
         </div>
