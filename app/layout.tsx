@@ -15,6 +15,7 @@ export default function RootLayout({
       <head />
       <body className="bg-white">
         <div className="flex lg:flex-row h-screen">
+          {/* @ts-expect-error Server Component */}
           <FiltersSidebar />
           <div className="overflow-auto p-6 flex-1">{children}</div>
         </div>
