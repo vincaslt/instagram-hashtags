@@ -8,11 +8,13 @@ import {
   ReactNode,
   startTransition,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
 import { HiCheck, HiX } from 'react-icons/hi'
 import { useAsyncFn } from 'react-use'
+import { createNewHashtag } from './api'
 import AddHashtagButton from './components/AddHashtagButton'
 import CopyHashtagsButton from './components/CopyHashtagsButton'
 import classNames from './utils'
@@ -31,7 +33,10 @@ function List({ hashtags: allHashtags, filters }: Props) {
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([])
   const [newHashtagText, setNewHashtagText] = useState<string | null>(null)
 
-  const activeFilters = searchParams.get('filter')?.split(',') || []
+  const activeFilters = useMemo(
+    () => searchParams.get('filter')?.split(',') || [],
+    [searchParams]
+  )
 
   const hashtags = activeFilters.length
     ? allHashtags.filter((hashtag) =>
@@ -82,7 +87,7 @@ function List({ hashtags: allHashtags, filters }: Props) {
         return
       }
 
-      await sendNewHashtag(newHashtagText)
+      await createNewHashtag(newHashtagText, activeFilters)
 
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
@@ -91,7 +96,7 @@ function List({ hashtags: allHashtags, filters }: Props) {
         setNewHashtagText(null)
       })
     },
-    [newHashtagText, router]
+    [newHashtagText, router, activeFilters]
   )
 
   const handleCopyClick = async () => {
@@ -110,7 +115,7 @@ function List({ hashtags: allHashtags, filters }: Props) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between h-10 pl-6 mb-2 pt-0">
+      <div className="flex items-center justify-between h-10 pl-6 mb-2 pt-0 gap-2">
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -197,8 +202,6 @@ function List({ hashtags: allHashtags, filters }: Props) {
                 <HiX className="h-5 w-5" aria-hidden="true" />
               </button>
             </form>
-
-            {/* TODO: assign categories */}
           </li>
         )}
       </ul>
@@ -210,13 +213,6 @@ function List({ hashtags: allHashtags, filters }: Props) {
       )}
     </div>
   )
-}
-
-function sendNewHashtag(hashtag: string) {
-  return fetch('api/hashtags', {
-    method: 'POST',
-    body: JSON.stringify({ hashtag }),
-  })
 }
 
 function getCheckedState(

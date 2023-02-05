@@ -1,4 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { Hashtag } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 
@@ -8,13 +9,19 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     // TODO: validate with zod
-    const { hashtag } = JSON.parse(req.body)
+    const {
+      hashtag: name,
+      categories: categoryIds,
+    }: { hashtag: string; categories: string[] } = JSON.parse(req.body)
 
-    await prisma.hashtag.create({
-      data: { name: hashtag },
+    const hashtag = await prisma.hashtag.create({
+      data: {
+        name,
+        categories: { connect: categoryIds.map((id) => ({ id })) },
+      },
     })
 
-    return res.status(200).send('OK')
+    return res.status(200).send({ hashtag })
   }
 
   if (req.method === 'GET') {
