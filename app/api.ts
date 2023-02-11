@@ -29,3 +29,12 @@ export async function createNewHashtag(
   })
   return response.json()
 }
+
+export async function deleteHashtags(ids: string[]) {
+  const response = await fetch(`api/hashtags`, {
+    method: 'DELETE',
+    body: JSON.stringify({ ids }),
+    cache: 'no-store',
+  })
+  return response.json()
+}

@@ -33,5 +33,19 @@ export default async function handler(
     return res.status(200).json(hashtags)
   }
 
+  if (req.method === 'DELETE') {
+    const { ids }: { ids: string[] } = JSON.parse(req.body)
+
+    const hashtags = await prisma.hashtag.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    })
+
+    return res.status(200).json(hashtags)
+  }
+
   res.status(405).send('Method Not Allowed')
 }
